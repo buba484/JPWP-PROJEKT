@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="GameLevel3.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="GameLevel2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="InstructionFormAdvance.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="InstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="GameLevel1 - kopiować.resx">
+      <DependentUpon>GameLevel1.resx</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
