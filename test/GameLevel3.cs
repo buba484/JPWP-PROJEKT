@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 public class GameLevel3 : Form
 {
+    private HashSet<Target> movingTargets; // Użyj HashSet do unikalnych celów
     private Timer gameTimer;
     private Label scoreLabel;
     private Label timeLabel;
@@ -15,6 +17,11 @@ public class GameLevel3 : Form
     private Panel menuPanel;
     private MainForm mainForm;
     private int badHits;
+    private Timer moveTargetTimer;
+    private bool isMoving;
+    private Timer addTargetTimer;
+    private int movingTargetCount;
+    private int movingTargetCount2;
     public GameLevel3(MainForm mainForm)
     {
         this.mainForm = mainForm;
@@ -61,10 +68,15 @@ public class GameLevel3 : Form
 
         gameTimer = new Timer { Interval = 1000 };
         gameTimer.Tick += GameTimer_Tick;
-
+        moveTargetTimer = new Timer { Interval = 50 }; // Co 50 ms
+        moveTargetTimer.Tick += MoveTargetTimer_Tick;
+        addTargetTimer = new Timer { Interval = 1000 };
+        addTargetTimer.Tick += AddTargetTimer_Tick; // Podpięcie zdarzenia
+        
         random = new Random();
         targets = new List<Target>();
-
+        movingTargets = new HashSet<Target>();
+        isMoving = false;
         this.FormClosing += GameLevel3_FormClosing;
         StartLevel();
     }
@@ -73,7 +85,7 @@ public class GameLevel3 : Form
     {
         score = 0;
         badHits = 0;
-        timeRemaining = 15;
+        timeRemaining = 45;
         var instructionForm = new InstructionFormAdvance("kota", 15, timeRemaining);
         instructionForm.ShowDialog();
         gameTimer.Start();
@@ -87,6 +99,16 @@ public class GameLevel3 : Form
         }
         CreateTargetsbad("croc.png");
         CreateTargetsbad("rhino.png");
+        for (int i = 0; i < 1; i++) // wybierz cel do poruszania
+        {
+            Target targetToMove = targets[random.Next(targets.Count)];
+            if (!movingTargets.Contains(targetToMove))
+                {
+                    movingTargets.Add(targetToMove);
+                    SetRandomDirection(targetToMove); // Ustaw losowy kierunek dla każdego celu
+                    movingTargetCount++;
+                }
+        }
     }
 
     private void CreateTargetsgood(string file)
@@ -105,6 +127,10 @@ public class GameLevel3 : Form
         target.BackgroundImage = Image.FromFile(file); // Ustaw ścieżkę do swojego pliku PNG
         target.BackgroundImageLayout = ImageLayout.Stretch; // Ustaw sposób wyświetlania obrazu // Ustaw sposób wyświetlania obrazu
         target.Click += Target_addpoint;
+        if (timeRemaining <= 30)
+        {
+            AddTargetTimer(target);
+        }
         target.Tag = file;
         targets.Add(target);
         this.Controls.Add(target);
@@ -125,6 +151,10 @@ public class GameLevel3 : Form
         target.BackgroundImage = Image.FromFile(file); // Ustaw ścieżkę do swojego pliku PNG
         target.BackgroundImageLayout = ImageLayout.Stretch; // Ustaw sposób wyświetlania obrazu
         target.Click += Target_subpoint;
+        if(timeRemaining <= 30)
+        {
+            AddTargetTimer(target);
+        }       
         target.Tag = file;
         targets.Add(target);
         this.Controls.Add(target);
@@ -147,11 +177,16 @@ public class GameLevel3 : Form
         string fileName = clickedTarget.Tag.ToString(); //zczytanie nazwy celu
         if (clickedTarget != null)
         {
+            movingTargetCount--;
             this.Controls.Remove(clickedTarget);
             targets.Remove(clickedTarget);
             CreateTargetsgood(fileName);
             score += 3;
             scoreLabel.Text = $"𝓟𝓾𝓷𝓴𝓽𝔂: {score}";
+            isMoving = false;
+
+            // Wybierz inny cel do poruszania
+            
         }
         CheckScore();
     }
@@ -161,13 +196,14 @@ public class GameLevel3 : Form
         string fileName = clickedTarget.Tag.ToString(); //zczytanie nazwy celu
         if (clickedTarget != null)
         {
-
+            movingTargetCount--;
             this.Controls.Remove(clickedTarget);
             targets.Remove(clickedTarget);
             CreateTargetsbad(fileName);
             score -= 2;
             scoreLabel.Text = $"𝓟𝓾𝓷𝓴𝓽𝔂: {score}";
             badHits++;
+            
         }
         CheckScore();
     }
@@ -190,10 +226,21 @@ public class GameLevel3 : Form
     {
         timeRemaining--;
         timeLabel.Text = $"𝓒𝔃𝓪𝓼: {timeRemaining}";
-
+        if (timeRemaining == 35)
+        {
+            moveTargetTimer.Start();
+            addTargetTimer.Start();
+            
+        }
+        if (movingTargetCount2 == 6)
+        {
+            addTargetTimer.Stop();
+        }
         if (timeRemaining <= 0)
         {
             gameTimer.Stop();
+            moveTargetTimer.Stop();
+            addTargetTimer.Stop();
             var result = MessageBox.Show($"Koniec poziomu! Zdobyte punkty: {score}", "Koniec gry", MessageBoxButtons.OK);
             if (result == DialogResult.OK)
             {
@@ -240,15 +287,144 @@ public class GameLevel3 : Form
             }
         }
     }
+    private void MoveTargetTimer_Tick(object sender, EventArgs e)
+{
+    foreach (var movingTarget in movingTargets) // Iteruj przez wszystkie poruszające się cele
+    {
+        if (movingTarget != null) // Sprawdź, czy cel powinien się poruszać
+        {
+            // Oblicz nową pozycję
+            int newX = movingTarget.Location.X + movingTarget.OffsetX;
+            int newY = movingTarget.Location.Y + movingTarget.OffsetY;
 
+            // Sprawdź kolizję z innymi celami
+            bool collisionDetected = false;
+            foreach (var otherTarget in targets)
+            {
+                if (otherTarget != movingTarget && 
+                    new Rectangle(newX, newY, movingTarget.Width, movingTarget.Height)
+                    .IntersectsWith(otherTarget.Bounds))
+                {
+                    collisionDetected = true; // Wykryto kolizję z innym celem
+                    break; // Przerwij, jeśli wykryto kolizję
+                }
+            }
+
+            // Sprawdź kolizję z etykietą
+            Rectangle menuPanelBounds = new Rectangle(menuPanel.Location, menuPanel.Size);
+            if (menuPanelBounds.IntersectsWith(new Rectangle(newX, newY, movingTarget.Width, movingTarget.Height)))
+            {
+                collisionDetected = true; // Ustaw flagę kolizji, jeśli cel koliduje z menuPanel
+            }
+                // Sprawdź kolizję z etykietą timeLabel
+                Rectangle timeLabelBounds = new Rectangle(timeLabel.Location, timeLabel.Size);
+                if (timeLabelBounds.IntersectsWith(new Rectangle(newX, newY, movingTarget.Width, movingTarget.Height)))
+                {
+                    collisionDetected = true; // Ustaw flagę kolizji, jeśli cel koliduje z timeLabel
+                }
+
+                // Sprawdź, czy cel osiągnął krawędź planszy
+                if (newX < 0) // Lewa krawędź
+            {
+                SetRandomDirection(movingTarget); // Ustaw losowy kierunek
+                newX = 0; // Ustaw cel na lewej krawędzi
+            }
+            else if (newX > this.ClientSize.Width - movingTarget.Width) // Prawa krawędź
+            {
+                SetRandomDirection(movingTarget); // Ustaw losowy kierunek
+                newX = this.ClientSize.Width - movingTarget.Width; // Ustaw cel na prawej krawędzi
+            }
+
+            // Sprawdź, czy cel osiągnął górną lub dolną krawędź
+            if (newY < 0) // Górna krawędź
+            {
+                SetRandomDirection(movingTarget); // Ustaw losowy kierunek
+                newY = 0; // Ustaw cel na górnej krawędzi
+            }
+            else if (newY > this.ClientSize.Height - movingTarget.Height) // Dolna krawędź
+            {
+                SetRandomDirection(movingTarget); // Ustaw losowy kierunek
+                newY = this.ClientSize.Height - movingTarget.Height; // Ustaw cel na dolnej krawędzi
+            }
+
+            // Ustaw nową pozycję, jeśli nie wykryto kolizji
+            if (!collisionDetected)
+            {
+                movingTarget.Location = new Point(newX, newY); // Ustaw nową pozycję celu
+            }
+            else
+            {
+                // Zmień kierunek ruchu na nowy losowy kierunek
+                SetRandomDirection(movingTarget);
+            }    
+                System.Diagnostics.Debug.WriteLine($"Target {movingTarget.Name} moved to ({newX}, {newY})");
+        }
+    }
+        
+    }
+    private void SetRandomDirection(Target target)
+    {
+        Random random = new Random();
+        target.OffsetX = random.Next(-20, 22); // Ustaw losowy offset X
+        target.OffsetY = random.Next(-20, 22); // Ustaw losowy offset Y
+    }
+    private void AddTargetTimer_Tick(object sender, EventArgs e)
+{
+    // Wybierz losowy cel z istniejących celów
+    if (targets.Count > 0)
+    {
+            if(movingTargetCount<=8)
+            { 
+            Target targetToMove = targets[random.Next(targets.Count)];
+
+            // Upewnij się, że cel nie jest już w movingTargets
+            if (!movingTargets.Contains(targetToMove))
+                {
+                    movingTargets.Add(targetToMove); // Dodaj cel do listy celów do poruszania
+                    SetRandomDirection(targetToMove); // Ustaw losowy kierunek dla celu
+                    movingTargetCount++;
+                    movingTargetCount2++;
+                }
+            }
+       }
+}
+private void AddTargetTimer(Target targetToMove)
+{
+        if (targets.Count > 0)
+        {
+            if (movingTargetCount <= 8)
+            {
+                // Upewnij się, że cel nie jest już w movingTargets
+                if (!movingTargets.Contains(targetToMove))
+                {
+                    movingTargets.Add(targetToMove); // Dodaj cel do listy celów do poruszania
+                    SetRandomDirection(targetToMove); // Ustaw losowy kierunek dla celu
+                    movingTargetCount++;
+                }
+            }
+        }
+    }
     private void PauseButton_Click(object sender, EventArgs e)
     {
         if (gameTimer.Enabled)
         {
             gameTimer.Stop();
+            addTargetTimer.Stop();
             MessageBox.Show("Gra zapauzowana. Kliknij OK, aby kontynuować.", "Pauza");
+            if (isMoving)
+            {
+                moveTargetTimer.Stop();               
+                isMoving = false;
+            }
+            else
+            {
+                moveTargetTimer.Start();                
+                isMoving = true;
+            }
             gameTimer.Start();
+            addTargetTimer.Start();
         }
+        
     }
 
     private void ExitButton_Click(object sender, EventArgs e)
@@ -270,6 +446,8 @@ public class GameLevel3 : Form
             if(timeRemaining>0)
             {
                 gameTimer.Start();
+                moveTargetTimer.Stop();
+                addTargetTimer.Stop();
             }
             else
             {
@@ -285,4 +463,5 @@ public class GameLevel3 : Form
         }
         
     }
+
 }

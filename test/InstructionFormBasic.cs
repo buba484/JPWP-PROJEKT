@@ -10,7 +10,7 @@ public class InstructionFormBasic : Form
 
         var cel = new Label
         {
-            Text = "Klikaj w "+ kolor + " kształty, aby zdobywać punkty. Unikaj innych celów!",
+            Text = "Klikaj w "+ kolor + ", aby zdobywać punkty. Unikaj innych celów!",
             AutoSize = true,
             Left = 50,
             Top = 50
@@ -27,7 +27,7 @@ public class InstructionFormBasic : Form
             Text = "Masz " + Convert.ToString(time) + " sekund",
             AutoSize = true,
             Left = 50,
-            Top = 100
+            Top = 150
         };
 
         var startButton = new Button

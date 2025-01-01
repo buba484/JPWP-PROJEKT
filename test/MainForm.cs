@@ -29,20 +29,29 @@ public class MainForm : Form
         name.Width = this.ClientSize.Width; // Ustaw szerokość etykiety na szerokość formularza
 
 
-        startGameButton = new Button { Text = "𝓢𝓽𝓪𝓻𝓽 𝓖𝓻𝔂", Left = 550, Top = 300, Width = 180 };
-        startGameButton.Click += StartGameButton_Click;
-
-        instructionButton = new Button { Text = "𝓘𝓷𝓼𝓽𝓻𝓾𝓴𝓬𝓳𝓪", Left = 550, Top = 360, Width = 180 };
-        instructionButton.Click += InstructionButton_Click;
-
-        exitButton = new Button { Text = "𝓦𝔂𝓳𝓭ź", Left = 550, Top = 420, Width = 180 };
-        exitButton.Click += ExitButton_Click;
+        startGameButton = new Button { Text = "𝓢𝓽𝓪𝓻𝓽 𝓖𝓻𝔂", Left = 550, Top = 300, Width = 180, Height = 50};
+        startGameButton.Click += StartGameButton_Click;        
+        startGameButton.Font = new Font("Arial", 16, FontStyle.Bold);
         startGameButton.FlatStyle = FlatStyle.Flat;
         startGameButton.FlatAppearance.BorderSize = 0;
         startGameButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
         startGameButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
         startGameButton.BackColor = Color.Transparent;
+        instructionButton = new Button { Text = "𝓘𝓷𝓼𝓽𝓻𝓾𝓴𝓬𝓳𝓪", Left = 550, Top = 360, Width = 180, Height = 50 };
+        instructionButton.Click += InstructionButton_Click;
+        instructionButton.Font = new Font("Arial", 16, FontStyle.Bold);
+        instructionButton.FlatStyle = FlatStyle.Flat;
+        instructionButton.FlatAppearance.BorderSize = 0;
+        instructionButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        instructionButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
         instructionButton.BackColor = Color.Transparent;
+        exitButton = new Button { Text = "𝓦𝔂𝓳𝓭ź", Left = 550, Top = 420, Width = 180, Height = 50 };
+        exitButton.Click += ExitButton_Click;
+        exitButton.Font = new Font("Arial", 16, FontStyle.Bold);
+        exitButton.FlatStyle = FlatStyle.Flat;
+        exitButton.FlatAppearance.BorderSize = 0;
+        exitButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        exitButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
         exitButton.BackColor = Color.Transparent;
         
 
@@ -66,11 +75,14 @@ public class MainForm : Form
         this.Hide();
         MainForm mainForm = new MainForm();
         //GameLevel1 gameLevel = new GameLevel1(this);       
-        //gameLevel.ShowDialog();       
-        GameLevel3 gameLevel = new GameLevel3(this);
-        gameLevel.ShowDialog();
-        //Kalambury kalambury = new Kalambury();
-        //kalambury.ShowDialog();
+        //gameLevel.ShowDialog();
+        //GameLevel2 gameLevel = new GameLevel2(this);
+        //gameLevel.ShowDialog();
+        //GameLevel3 gameLevel = new GameLevel3(this);
+        //gameLevel.ShowDialog();
+        Kalambury kalambury = new Kalambury(this);
+        kalambury.ShowDialog();
+
     }
     private void InstructionButton_Click(object sender, EventArgs e)
     {

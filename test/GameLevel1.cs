@@ -20,22 +20,31 @@ public class GameLevel1 : Form
         this.Text = "Poziom Gry 1";
         this.ClientSize = new System.Drawing.Size(1280, 720);
         this.DoubleBuffered = true;
-
+        this.BackgroundImage = Image.FromFile("bglv1.jpg");
+        this.BackgroundImageLayout = ImageLayout.Stretch;
         // Pasek menu
         menuPanel = new Panel
         {
             Dock = DockStyle.Bottom,
             Height = 50,
-            BackColor = Color.LightGray
+            BackColor = Color.Transparent
         };
 
         // Przyciski w menu
         var pauseButton = new Button { Text = "Pauza", Left = 10, Width = 100 };
         pauseButton.Click += PauseButton_Click;
-
+        pauseButton.FlatStyle = FlatStyle.Flat;
+        pauseButton.FlatAppearance.BorderSize = 0;
+        pauseButton.BackColor = Color.Transparent;
+        pauseButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        pauseButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
         var exitButton = new Button { Text = "Wyjdź", Left = 120, Width = 100 };
-        exitButton.Click += ExitButton_Click;
-
+        exitButton.Click += ExitButton_Click;       
+        exitButton.BackColor = Color.Transparent;
+        exitButton.FlatStyle = FlatStyle.Flat;
+        exitButton.FlatAppearance.BorderSize = 0;
+        exitButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        exitButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
         menuPanel.Controls.Add(pauseButton);
         menuPanel.Controls.Add(exitButton);
 
@@ -44,7 +53,8 @@ public class GameLevel1 : Form
         // Elementy gry
         scoreLabel = new Label { Text = "Punkty: 0", Left = 10, Top = 10, AutoSize = true };
         timeLabel = new Label { Text = "Czas: 10", Left = 200, Top = 10, AutoSize = true };
-
+        scoreLabel.BackColor = Color.Transparent;
+        timeLabel.BackColor = Color.Transparent;
         this.Controls.Add(scoreLabel);
         this.Controls.Add(timeLabel);
 
@@ -62,7 +72,7 @@ public class GameLevel1 : Form
     {
         score = 0;
         timeRemaining = 10;
-        var instructionForm = new InstructionFormBasic("czerwone", 15, timeRemaining);
+        var instructionForm = new InstructionFormBasic("kota", 15, timeRemaining);
         instructionForm.ShowDialog();
         gameTimer.Start();
         for (int i = 0; i < 5; i++)
@@ -74,13 +84,18 @@ public class GameLevel1 : Form
 
     private void CreateTargets()
     {
-       
-            var target = new Target
+        Target target;
+
+        do
+        {
+            target = new Target
             {
-                Location = new Point(random.Next(100, 1180), random.Next(100, 620)),
-                BackColor = Color.Red,
-                Size = new Size(50, 50)
+                Location = new Point(random.Next(100, 1100), random.Next(100, 620)),
+                Size = new Size(100, 100) // Ustaw rozmiar celu
             };
+        } while (IsOverlapping(target));
+        target.BackgroundImage = Image.FromFile("dog.png");
+            target.BackgroundImageLayout = ImageLayout.Stretch;
             target.Click += Target_Click;
             targets.Add(target);
             this.Controls.Add(target);
@@ -107,8 +122,8 @@ public class GameLevel1 : Form
             var result = MessageBox.Show($"Zdobyłeś wymagane punkty : {score}", "Kliknij Ok aby przejść dalej", MessageBoxButtons.OK);
             if (result == DialogResult.OK)
             {
-                
-                    this.Close();
+                    
+                    this.Hide();
                     var gameLevel = new GameLevel2(mainForm);
                     gameLevel.ShowDialog();         
             }
@@ -143,7 +158,18 @@ public class GameLevel1 : Form
             }                      
         }
     }
-
+    private bool IsOverlapping(Target newTarget)
+    {
+        foreach (var existingTarget in targets)
+        {
+            // Sprawdź, czy prostokąty celów się nakładają
+            if (existingTarget.Bounds.IntersectsWith(newTarget.Bounds))
+            {
+                return true; // Nakładają się
+            }
+        }
+        return false; // Nie nakładają się
+    }
     private void PauseButton_Click(object sender, EventArgs e)
     {
         if (gameTimer.Enabled)

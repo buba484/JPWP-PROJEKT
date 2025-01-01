@@ -5,12 +5,14 @@ using System.Windows.Forms;
 public class Target : Button
 {
     public bool IsCorrect { get; set; } // Właściwość do oznaczania, czy cel jest poprawny
+    public int OffsetX { get; set; } // Właściwość do przechowywania przesunięcia w poziomie
+    public int OffsetY { get; set; } // Właściwość do przechowywania przesunięcia w pionie
 
     // Konstruktor
     public Target()
     {
        
-        this.FlatStyle = FlatStyle.Flat; // Ustaw styl przycisku na płaski, aby lepiej pasował do tła
+        this.FlatStyle = FlatStyle.Flat; //Styl przycisku na płaski, aby lepiej pasował do tła
         this.BackColor = Color.Transparent; // Ustaw tło na przezroczyste
         this.FlatAppearance.BorderSize = 0; // Usuniecie obramowania                                            // Ustawienie kolorów tła na przezroczyste dla stanów myszki
         this.FlatAppearance.MouseOverBackColor = Color.Transparent; // Kolor tła przy najechaniu

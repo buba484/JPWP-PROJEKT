@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -21,11 +22,11 @@ public class Kalambury : Form
     public Kalambury(MainForm mainForm)
     {
         this.mainForm = mainForm;
-        buttons = new Button[3, 3];
+        buttons = new Button[4, 4];
         this.czas = 0;
         // Konfiguracja okna
         this.Text = "Kalambury 3x3";
-        this.ClientSize = new Size(400, 500);
+        this.ClientSize = new Size(500, 650);
         this.BackColor = Color.LightGray;
         this.score = 0;
         // Inicjalizacja komponentów
@@ -47,7 +48,7 @@ public class Kalambury : Form
         //instrukcja
         wordLabel2 = new Label
         {
-            Text = "Zobaczysz 9 zwierząt, twoim zadaniem jest znaleźć 4 pieski ",
+            Text = "Zobaczysz 16 zwierząt, twoim zadaniem jest znaleźć 4 pieski ",
             Font = new Font("Arial", 14, FontStyle.Bold),
             Dock = DockStyle.Top,
             TextAlign = ContentAlignment.MiddleCenter,
@@ -56,7 +57,7 @@ public class Kalambury : Form
         
         wordLabel3 = new Label
         {
-            Text = "Bedziesz miał 3 sekundy na zapamiętanie ich położenia. POWODZENIA!",
+            Text = "Bedziesz miał 1 sekunde na zapamiętanie ich położenia. POWODZENIA!",
             Font = new Font("Arial", 14, FontStyle.Bold),
             Dock = DockStyle.Top,
             TextAlign = ContentAlignment.MiddleCenter,
@@ -131,15 +132,17 @@ public class Kalambury : Form
         this.wordLabel.Hide();
         this.wordLabel2.Hide();
         this.wordLabel3.Hide();
-        GenerateGrid("dog.png", 0, 0);
-        GenerateGrid("cat.png", 0, 1);
-        GenerateGrid("dog.png", 0, 2);
-        GenerateGrid("croc.png", 1, 0);
-        GenerateGrid("dog.png", 1, 1);
-        GenerateGrid("rhino.png", 1, 2);
-        GenerateGrid("dog.png", 2, 0);
-        GenerateGrid("cat.png", 2, 1);
-        GenerateGrid("rhino.png", 2, 2);
+       // Generowanie siatki 3x3
+       ShuffleTargets(targetFiles);
+    // Generowanie siatki 4x4
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            // Użyj przetasowanej listy do generowania celów
+            GenerateGrid(targetFiles[i * 4 + j], i, j);
+        }
+    }
         // Losowanie hasła        
 
 
@@ -155,9 +158,9 @@ public class Kalambury : Form
     }
     private void StartNewGame()
     {
-        for(int i = 0; i < 3; i++)
+        for(int i = 0; i < 4; i++)
         {
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < 4; j++)
             {
                 buttons[i, j].BackgroundImage = Image.FromFile("szary.png"); // Ustawienie tła na szary
             }
@@ -181,7 +184,8 @@ public class Kalambury : Form
         if (timeRemaining <= 0)
         {
             gameTimer.Stop();
-            MessageBox.Show("Czas się skończył! Spróbuj ponownie.", "Koniec gry");
+            MessageBox.Show("Czas się skończył! Nie udało Ci się. ", "Koniec gry");
+            this.Close();
         }
     }
 
@@ -211,8 +215,38 @@ public class Kalambury : Form
             
         }
     }
-
-
+    private List<string> targetFiles = new List<string>
+    {
+    "dog.png",
+    "dog.png",
+    "dog.png",
+    "dog.png",
+    "cat.png",
+    "cat.png",
+    "rhino.png",
+    "croc.png",
+    "croc.png",
+    "rhino.png",
+    "cat.png",
+    "cat.png",
+    "rhino.png",
+    "croc.png",
+    "croc.png",
+    "rhino.png",
+    };
+    private void ShuffleTargets(List<string> targets)
+{
+    Random random = new Random();
+    int n = targets.Count;
+    for (int i = n - 1; i > 0; i--)
+    {
+        int j = random.Next(i + 1); // Losowy indeks od 0 do i
+        // Zamień miejscami elementy
+        string temp = targets[i];
+        targets[i] = targets[j];
+        targets[j] = temp;
+    }
+}
     public static string GetFileNameWithoutExtension(string fileName)
     {
         if (string.IsNullOrEmpty(fileName))
@@ -233,7 +267,7 @@ public class Kalambury : Form
     private async Task WaitForThreeSeconds()
     {
         // Oczekiwanie 3 sekundy
-        await Task.Delay(3000); // 3000 ms = 3 sekundy
+        await Task.Delay(1000); // 1000 ms = 1 sekunde
     }
     protected void Kalambury_FormClosing(object sender, FormClosingEventArgs e)
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 public class InstructionFormAdvance : Form
@@ -7,7 +8,7 @@ public class InstructionFormAdvance : Form
     {
         this.Text = "Instrukcja";
         this.ClientSize = new System.Drawing.Size(800, 600);
-
+        //this.BackgroundImage = Image.FromFile("formbg.png");
         var cel_dobry = new Label
         {
             Text = "Klikaj w "+ target_good + " , aby zdobywać punkty. Unikaj innych celów!",
